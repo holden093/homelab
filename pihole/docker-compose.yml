@@ -1,0 +1,41 @@
+version: '3.8'
+services:
+  pihole:
+    image: pihole/pihole:latest
+    container_name: pihole
+    networks:
+      - BeeNetwork
+    ports:
+      - target: 53
+        published: 53
+        protocol: udp
+        mode: host
+      - target: 53
+        published: 53
+        protocol: tcp
+        mode: host
+      - target: 67
+        published: 67
+        protocol: udp
+        mode: host
+    volumes:
+      - "/srv/docker_data/pihole/etc-pihole:/etc/pihole"
+      - "/srv/docker_data/pihole/etc-dnsmasq.d:/etc/dnsmasq.d"
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.network=BeeNetwork"
+        - "traefik.http.routers.pihole.entrypoints=http"
+        - "traefik.http.routers.pihole.rule=Host(\"pihole.local.nixit.it\")"
+        - "traefik.http.middlewares.pihole-https-redirect.redirectscheme.scheme=https"
+        - "traefik.http.routers.pihole.middlewares=pihole-https-redirect"
+        - "traefik.http.routers.pihole-secure.entrypoints=https"
+        - "traefik.http.routers.pihole-secure.rule=Host(\"pihole.local.nixit.it\")"
+        - "traefik.http.routers.pihole-secure.tls=true"
+        - "traefik.http.routers.pihole-secure.service=pihole"
+        - "traefik.http.services.pihole.loadbalancer.server.port=80"
+      placement:
+        constraints: [node.hostname == LadyDiana]
+networks:
+  BeeNetwork:
+    external: true

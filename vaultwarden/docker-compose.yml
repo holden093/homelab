@@ -1,0 +1,29 @@
+version: "3.8"
+services:
+  vaultwarden:
+    image: vaultwarden/server:latest
+    networks:
+      - BeeNetwork
+    volumes:
+      - /srv/docker_data/vaultwarden/vw-data:/data
+      - /srv/docker_data/vaultwarden/log:/data/log
+    env_file:
+      - vaultwarden.env
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.network=BeeNetwork"
+        - "traefik.http.routers.bitwarden.entrypoints=http"
+        - "traefik.http.routers.bitwarden.rule=Host(\"bitwarden.local.nixit.it\")"
+        - "traefik.http.middlewares.bitwarden-https-redirect.redirectscheme.scheme=https"
+        - "traefik.http.routers.bitwarden.middlewares=bitwarden-https-redirect"
+        - "traefik.http.routers.bitwarden-secure.entrypoints=https"
+        - "traefik.http.routers.bitwarden-secure.rule=Host(\"bitwarden.local.nixit.it\")"
+        - "traefik.http.routers.bitwarden-secure.tls=true"
+        - "traefik.http.routers.bitwarden-secure.service=bitwarden"
+        - "traefik.http.services.bitwarden.loadbalancer.server.port=80"
+      placement:
+        constraints: [node.hostname == LadyDiana]
+networks:
+  BeeNetwork:
+    external: true

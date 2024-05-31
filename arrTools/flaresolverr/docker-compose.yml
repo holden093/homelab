@@ -1,0 +1,15 @@
+version: "3.8"
+services:
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    hostname: flaresolverr
+    networks:
+      - BeeNetwork
+    env_file:
+      - flaresolverr.env
+    deploy:
+      placement:
+        constraints: [node.hostname == storinator]
+networks:
+  BeeNetwork:
+    external: true

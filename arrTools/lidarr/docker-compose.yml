@@ -1,0 +1,30 @@
+version: "3.8"
+services:
+  lidarr:
+    image: lscr.io/linuxserver/lidarr:latest
+    networks:
+      - BeeNetwork
+    env_file:
+      - lidarr.env
+    volumes:
+      - /srv/docker_data/lidarr:/config
+      - /srv/docker_data/multimedia/music:/music
+      - /srv/docker_data/downloads:/downloads
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.network=BeeNetwork"
+        - "traefik.http.routers.lidarr.entrypoints=http"
+        - "traefik.http.routers.lidarr.rule=Host(\"lidarr.local.nixit.it\")"
+        - "traefik.http.middlewares.lidarr-https-redirect.redirectscheme.scheme=https"
+        - "traefik.http.routers.lidarr.middlewares=lidarr-https-redirect"
+        - "traefik.http.routers.lidarr-secure.entrypoints=https"
+        - "traefik.http.routers.lidarr-secure.rule=Host(\"lidarr.local.nixit.it\")"
+        - "traefik.http.routers.lidarr-secure.tls=true"
+        - "traefik.http.routers.lidarr-secure.service=lidarr"
+        - "traefik.http.services.lidarr.loadbalancer.server.port=8686"
+      placement:
+        constraints: [node.hostname == storinator]
+networks:
+  BeeNetwork:
+    external: true

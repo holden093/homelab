@@ -1,0 +1,15 @@
+version: "3.9"
+services:
+  tunnel:
+    image: cloudflare/cloudflared
+    command: tunnel run
+    deploy:
+      placement:
+        constraints: [node.hostname == LadyDiana]
+    networks:
+      - BeeNetwork
+    env_file:
+      - cloudflared.env
+networks:
+  BeeNetwork:
+    external: true
