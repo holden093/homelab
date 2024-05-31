@@ -1,0 +1,31 @@
+version: "3.8"
+services:
+  gitea:
+    image: gitea/gitea:latest
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+    networks:
+      - BeeNetwork
+    volumes:
+      - /srv/docker_data/gitea:/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.gitea.entrypoints=http"
+        - "traefik.http.routers.gitea.rule=Host(\"gitea.local.nixit.it\")"
+        - "traefik.http.middlewares.gitea-https-redirect.redirectscheme.scheme=https"
+        - "traefik.http.routers.gitea.middlewares=gitea-https-redirect"
+        - "traefik.http.routers.gitea-secure.entrypoints=https"
+        - "traefik.http.routers.gitea-secure.rule=Host(\"gitea.local.nixit.it\")"
+        - "traefik.http.routers.gitea-secure.tls=true"
+        - "traefik.http.routers.gitea-secure.service=gitea"
+        - "traefik.http.services.gitea.loadbalancer.server.port=80"
+        - "traefik.docker.network=BeeNetwork"
+      placement:
+        constraints: [node.hostname == storinator]
+networks:
+  BeeNetwork:
+    external: true
